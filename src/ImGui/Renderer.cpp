@@ -2,6 +2,8 @@
 
 #include "ImGui/FontStyles.h"
 #include "Manager.h"
+#include <windows.h>
+#include <d3d11.h>
 
 namespace ImGui::Renderer
 {
@@ -52,7 +54,24 @@ namespace ImGui::Renderer
 		}
 		static inline REL::Relocation<decltype(thunk)> func;
 	};
-
+	typedef struct
+	{
+		ID3D11Device*               pd3dDevice;
+		ID3D11DeviceContext*        pd3dDeviceContext;
+		IDXGIFactory*               pFactory;
+		ID3D11Buffer*               pVB;
+		ID3D11Buffer*               pIB;
+		ID3D11VertexShader*         pVertexShader;
+		ID3D11InputLayout*          pInputLayout;
+		ID3D11Buffer*               pVertexConstantBuffer;
+		ID3D11PixelShader*          pPixelShader;
+		ID3D11SamplerState*         pTexSamplerLinear;
+		ID3D11RasterizerState*      pRasterizerState;
+		ID3D11BlendState*           pBlendState;
+		ID3D11DepthStencilState*    pDepthStencilState;
+		int                         VertexBufferSize;
+		int                         IndexBufferSize;
+	} ImGui_ImplDX11_Data;
 	// IMenu::PostDisplay
 	struct PostDisplay
 	{
@@ -76,6 +95,22 @@ namespace ImGui::Renderer
 
 			}
 			ImGui::NewFrame();
+			ImGui_ImplDX11_Data* bd = ImGui::GetCurrentContext() ? ((ImGui_ImplDX11_Data*)ImGui::GetIO().BackendRendererUserData) : nullptr;
+		    if (bd && bd->pd3dDevice) 
+			{
+				D3D11_RASTERIZER_DESC desc;
+				ZeroMemory(&desc, sizeof(desc));
+				desc.FillMode = D3D11_FILL_SOLID;
+				desc.CullMode = D3D11_CULL_NONE;
+				desc.ScissorEnable = false;
+				desc.DepthClipEnable = false;
+				if (bd->pRasterizerState)
+				{
+					bd->pRasterizerState->Release();
+					bd->pRasterizerState = nullptr;
+				}				
+				bd->pd3dDevice->CreateRasterizerState(&desc, &bd->pRasterizerState);
+			}
 			{
 				// disable windowing
 				GImGui->NavWindowingTarget = nullptr;
@@ -84,6 +119,7 @@ namespace ImGui::Renderer
 			}
 			ImGui::EndFrame();
 			ImGui::Render();
+
 			ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
 			func(a_menu);
