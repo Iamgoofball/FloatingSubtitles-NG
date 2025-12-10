@@ -54,7 +54,24 @@ namespace ImGui::Renderer
 		}
 		static inline REL::Relocation<decltype(thunk)> func;
 	};
-
+	typedef struct
+	{
+		ID3D11Device*               pd3dDevice;
+		ID3D11DeviceContext*        pd3dDeviceContext;
+		IDXGIFactory*               pFactory;
+		ID3D11Buffer*               pVB;
+		ID3D11Buffer*               pIB;
+		ID3D11VertexShader*         pVertexShader;
+		ID3D11InputLayout*          pInputLayout;
+		ID3D11Buffer*               pVertexConstantBuffer;
+		ID3D11PixelShader*          pPixelShader;
+		ID3D11SamplerState*         pTexSamplerLinear;
+		ID3D11RasterizerState*      pRasterizerState;
+		ID3D11BlendState*           pBlendState;
+		ID3D11DepthStencilState*    pDepthStencilState;
+		int                         VertexBufferSize;
+		int                         IndexBufferSize;
+	} ImGui_ImplDX11_Data;
 	// IMenu::PostDisplay
 	struct PostDisplay
 	{
